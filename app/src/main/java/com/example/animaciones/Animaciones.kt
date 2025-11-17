@@ -29,19 +29,7 @@ enum class GameState { IDLE, PLAYING, GAME_OVER }
 
 @Composable
 fun Animaciones() {
-    var expanded by remember { mutableStateOf(false) }
-
-    val animatedSize by animateDpAsState(
-        targetValue = if (expanded) 200.dp else 100.dp,
-        animationSpec = spring(dampingRatio = 0.6f),
-        label = "size_animation"
-    )
-
-    val animatedOffset by animateDpAsState(
-        targetValue = if (expanded) 100.dp else 0.dp,
-        animationSpec = tween(durationMillis = 600),
-        label = "offset_animation"
-    )
+    var currentState by remember { mutableStateOf(AppState.LOADING) }
 
     Column(
         modifier = Modifier
@@ -49,25 +37,77 @@ fun Animaciones() {
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Button(
-            onClick = { expanded = !expanded },
-            modifier = Modifier.padding(bottom = 32.dp)
+        Row(
+            modifier = Modifier.padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(if (expanded) "Contraer" else "Expandir")
+            AppState.values().forEach { state ->
+                Button(
+                    onClick = { currentState = state },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (currentState == state) Color.Blue else Color.Gray
+                    )
+                ) {
+                    Text(state.name)
+                }
+            }
         }
 
-        Box(
-            modifier = Modifier
-                .offset(x = animatedOffset, y = animatedOffset)
-                .size(animatedSize)
-                .background(Color.Red)
-                .clip(RoundedCornerShape(8.dp))
-        ) {
-            Text(
-                "Animado",
-                modifier = Modifier.align(Alignment.Center),
-                color = Color.White
-            )
+        AnimatedContent(
+            targetState = currentState,
+            transitionSpec = {
+                fadeIn(animationSpec = tween(300)) with
+                        fadeOut(animationSpec = tween(300))
+            },
+            label = "content_animation"
+        ) { targetState ->
+            when (targetState) {
+                AppState.LOADING -> LoadingContent()
+                AppState.CONTENT -> SuccessContent()
+                AppState.ERROR -> ErrorContent()
+            }
         }
+    }
+}
+
+@Composable
+fun LoadingContent() {
+    Box(
+        modifier = Modifier
+            .size(150.dp)
+            .background(Color.Yellow)
+            .clip(RoundedCornerShape(8.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            CircularProgressIndicator(color = Color.Black)
+            Text("Cargando...", modifier = Modifier.padding(top = 8.dp))
+        }
+    }
+}
+
+@Composable
+fun SuccessContent() {
+    Box(
+        modifier = Modifier
+            .size(150.dp)
+            .background(Color.Green)
+            .clip(RoundedCornerShape(8.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text("¡Contenido Cargado!", textAlign = TextAlign.Center)
+    }
+}
+
+@Composable
+fun ErrorContent() {
+    Box(
+        modifier = Modifier
+            .size(150.dp)
+            .background(Color.Red)
+            .clip(RoundedCornerShape(8.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text("Error al cargar", color = Color.White)
     }
 }
