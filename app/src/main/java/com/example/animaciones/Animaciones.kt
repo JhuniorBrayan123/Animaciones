@@ -29,15 +29,18 @@ enum class GameState { IDLE, PLAYING, GAME_OVER }
 
 @Composable
 fun Animaciones() {
-    var isBlue by remember { mutableStateOf(true) }
-    // Colores objetivo: Rojo y Verde
-    val targetColor = if (isBlue) Color.Red else Color.Green
+    var expanded by remember { mutableStateOf(false) }
 
-    val animatedColor by animateColorAsState(
-        targetValue = targetColor,
-        // 🚨 MODIFICACIÓN: Duración aumentada a 2 segundos (2000 ms) 🚨
-        animationSpec = tween(durationMillis = 2000),
-        label = "color_animation"
+    val animatedSize by animateDpAsState(
+        targetValue = if (expanded) 200.dp else 100.dp,
+        animationSpec = spring(dampingRatio = 0.6f),
+        label = "size_animation"
+    )
+
+    val animatedOffset by animateDpAsState(
+        targetValue = if (expanded) 100.dp else 0.dp,
+        animationSpec = tween(durationMillis = 600),
+        label = "offset_animation"
     )
 
     Column(
@@ -47,51 +50,23 @@ fun Animaciones() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Button(
-            onClick = { isBlue = !isBlue },
+            onClick = { expanded = !expanded },
             modifier = Modifier.padding(bottom = 32.dp)
         ) {
-            Text("Cambiar Color")
+            Text(if (expanded) "Contraer" else "Expandir")
         }
 
-        // --- 1. CUADRO CON ANIMACIÓN SUAVE ---
-        Text(
-            text = "1. ANIMADO: Transición de 2 segundos",
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
         Box(
             modifier = Modifier
-                .size(200.dp)
-                .background(animatedColor) // Usa el valor ANIMADO
+                .offset(x = animatedOffset, y = animatedOffset)
+                .size(animatedSize)
+                .background(Color.Red)
                 .clip(RoundedCornerShape(8.dp))
         ) {
             Text(
-                "Animación Activa",
+                "Animado",
                 modifier = Modifier.align(Alignment.Center),
-                color = Color.White,
-                fontSize = 18.sp
-            )
-        }
-
-        Spacer(modifier = Modifier.height(32.dp)) // Espacio de separación
-
-        // --- 2. CUADRO SIN ANIMACIÓN (INSTANTÁNEO) ---
-        Text(
-            text = "2. INSTANTÁNEO: Sin animación (Brusco)",
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-        Box(
-            modifier = Modifier
-                .size(200.dp)
-                .background(targetColor) // Usa el valor OBJETIVO final
-                .clip(RoundedCornerShape(8.dp))
-        ) {
-            Text(
-                "Cambio Instantáneo",
-                modifier = Modifier.align(Alignment.Center),
-                color = Color.White,
-                fontSize = 18.sp
+                color = Color.White
             )
         }
     }
