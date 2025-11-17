@@ -29,7 +29,16 @@ enum class GameState { IDLE, PLAYING, GAME_OVER }
 
 @Composable
 fun Animaciones() {
-    var visible by remember { mutableStateOf(false) }
+    var isBlue by remember { mutableStateOf(true) }
+    // Colores objetivo: Rojo y Verde
+    val targetColor = if (isBlue) Color.Red else Color.Green
+
+    val animatedColor by animateColorAsState(
+        targetValue = targetColor,
+        // 🚨 MODIFICACIÓN: Duración aumentada a 2 segundos (2000 ms) 🚨
+        animationSpec = tween(durationMillis = 2000),
+        label = "color_animation"
+    )
 
     Column(
         modifier = Modifier
@@ -38,30 +47,52 @@ fun Animaciones() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Button(
-            onClick = { visible = !visible },
-            modifier = Modifier.padding(bottom = 16.dp)
+            onClick = { isBlue = !isBlue },
+            modifier = Modifier.padding(bottom = 32.dp)
         ) {
-            Text(if (visible) "Ocultar Cuadro" else "Mostrar Cuadro")
+            Text("Cambiar Color")
         }
 
-        AnimatedVisibility(
-            visible = visible,
-            enter = fadeIn() + expandVertically(),
-            exit = fadeOut() + shrinkVertically()
+        // --- 1. CUADRO CON ANIMACIÓN SUAVE ---
+        Text(
+            text = "1. ANIMADO: Transición de 2 segundos",
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        Box(
+            modifier = Modifier
+                .size(200.dp)
+                .background(animatedColor) // Usa el valor ANIMADO
+                .clip(RoundedCornerShape(8.dp))
         ) {
-            Box(
-                modifier = Modifier
-                    .size(200.dp)
-                    .background(Color.Blue)
-                    .clip(RoundedCornerShape(8.dp))
-            ) {
-                Text(
-                    "¡Hola!",
-                    modifier = Modifier.align(Alignment.Center),
-                    color = Color.White,
-                    fontSize = 24.sp
-                )
-            }
+            Text(
+                "Animación Activa",
+                modifier = Modifier.align(Alignment.Center),
+                color = Color.White,
+                fontSize = 18.sp
+            )
+        }
+
+        Spacer(modifier = Modifier.height(32.dp)) // Espacio de separación
+
+        // --- 2. CUADRO SIN ANIMACIÓN (INSTANTÁNEO) ---
+        Text(
+            text = "2. INSTANTÁNEO: Sin animación (Brusco)",
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        Box(
+            modifier = Modifier
+                .size(200.dp)
+                .background(targetColor) // Usa el valor OBJETIVO final
+                .clip(RoundedCornerShape(8.dp))
+        ) {
+            Text(
+                "Cambio Instantáneo",
+                modifier = Modifier.align(Alignment.Center),
+                color = Color.White,
+                fontSize = 18.sp
+            )
         }
     }
 }
